@@ -12,6 +12,9 @@ export const authenticateUserByAccessToken = async (
   let isError = false;
   let errorMessage = "";
 
+  console.log("\n");
+  console.log("authorization =>", authHeader);
+
   if (!authHeader || !authHeader.includes("Bearer")) {
     res.status(401).json({
       message: "Access Unauthorized",
