@@ -14,6 +14,7 @@ export const getAllTests = async (req: Request, res: Response) => {
   });
 
   if (!response) {
+    console.log("datas =>", data);
     res.status(200).json(data);
   }
 };

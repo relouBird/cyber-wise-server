@@ -36,4 +36,19 @@ export class Fetch {
 
     return data;
   }
+
+  async GetByUid(id: string, errorHandler?: ErrorHandler): Promise<null | any> {
+    const { data, error } = await this.supabase
+      .from(this.name)
+      .select()
+      .eq("uid", id)
+      .single();
+
+    if (error) {
+      errorHandler && errorHandler(error);
+      return null;
+    }
+
+    return data;
+  }
 }

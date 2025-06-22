@@ -51,7 +51,11 @@ export const createUser = async (req: Request, res: Response) => {
       errorMessage = error?.message ?? "";
     });
     setTimeout(async () => {
-      res.status(201).json({ message: "user has been created.", data: datas });
+      res.status(201).json({
+        message: "user has been created.",
+        data: datas?.auth,
+        type: datas?.type,
+      });
     }, 1000);
   } else {
     res.status(500).json({
@@ -82,7 +86,13 @@ export const loginUser = async (req: Request, res: Response) => {
   if (!isError) {
     setTimeout(async () => {
       console.log("user-signin ==>", data.email);
-      res.status(201).json({ message: "user has Connected...", data: datas });
+      res
+        .status(200)
+        .json({
+          message: "user has Connected...",
+          data: datas?.auth,
+          type: datas?.type,
+        });
     }, 1000);
   } else {
     res.status(500).json({

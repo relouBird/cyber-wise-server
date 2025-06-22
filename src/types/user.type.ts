@@ -1,3 +1,5 @@
+import { User } from "@supabase/supabase-js";
+
 export interface Credentials {
   email: string;
   password: string;
@@ -29,20 +31,6 @@ type AppMetadata = {
   providers: string[];
 };
 
-type User = {
-  id: string;
-  aud: string;
-  role: string;
-  email: string;
-  email_confirmed_at: string;
-  phone: string;
-  last_sign_in_at: string;
-  app_metadata: AppMetadata;
-  user_metadata: Record<string, unknown>;
-  identities: UserIdentity[];
-  created_at: string;
-  updated_at: string;
-};
 
 type Session = {
   access_token: string;
@@ -54,6 +42,11 @@ type Session = {
 };
 
 export type AuthData = {
-    user: User;
-    session: Session;
-  };
+  user: User;
+  session: Session;
+};
+
+export type LoginData = {
+  auth: AuthData | null;
+  type: string;
+};
