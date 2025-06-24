@@ -1,5 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { UserModel } from "../models/user.model";
+import {
+  DetailSimpleInterface,
+  UserSimpleCredentials,
+} from "../types/user.type";
+import { User } from "@supabase/supabase-js";
 
 // Middleware pour vérifier et extraire les infos utilisateur
 export const authenticateUserByAccessToken = async (
@@ -42,4 +47,32 @@ export const authenticateUserByAccessToken = async (
   (req as any).user = user;
 
   next(); // continue la chaîne des middlewares
+};
+
+export const convertData = (data: User | null): UserSimpleCredentials => {
+  if (data) {
+    const meta: DetailSimpleInterface =
+      data.user_metadata as DetailSimpleInterface;
+    const userRole: UserSimpleCredentials = {
+      id: data.id,
+      firstName: meta.firstName,
+      lastName: meta.lastName,
+      email: data.email ?? "",
+      phone: meta.phone,
+      password: meta.firstName + meta.lastName + "@123",
+      role: meta.role,
+      status: meta.status,
+    };
+    return userRole;
+  }
+  return {
+    id: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    role: "Employé",
+    status: "Inactif",
+  };
 };

@@ -1,27 +1,33 @@
 import { UserModel } from "../models/user.model";
 import { Request, Response } from "express";
-import { UserLoginCredentials } from "../types/user.type";
+import {
+  UserLoginCredentials,
+  UserSimpleCredentials,
+} from "../types/user.type";
 
 // fonction qui est appelé lors de la requete et permettant de recuperer tout les users
 export const getAllUsers = async (req: Request, res: Response) => {
   const user = new UserModel();
-  let response: boolean = false;
+  let isError = false;
+  let errorMessage = "";
 
   const data = await user.getAll((error) => {
-    res.status(500).send({
-      message: "Erreur lors de la récupération des Users",
-      error: error?.message,
-    });
-    response = true;
+    isError = true;
+    errorMessage = error?.message ?? "";
   });
 
-  if (!response) {
-    res.status(200).json(data);
+  if (!isError) {
+    res.status(200).json({ message: "Tout les utilisateurs", data: data });
+  } else {
+    res.status(500).send({
+      message: "Erreur lors de la récupération des Users",
+      error: errorMessage,
+    });
   }
 };
 
-// fonction qui est appelé lors de la requete et permettant de creer un nouvel utilisateur
-export const createUser = async (req: Request, res: Response) => {
+// fonction qui est appelé lors de la requete et permettant de creer un nouvel utilisateur Manager
+export const createAdminUser = async (req: Request, res: Response) => {
   const user = new UserModel();
   const data = req.body as UserLoginCredentials;
   let isError = false;
@@ -65,6 +71,111 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
+// fonction qui permet de creer un utilisateur au second plan
+export const createUser = async (req: Request, res: Response) => {
+  const user = new UserModel();
+  const data = req.body as UserSimpleCredentials;
+  let isError = false;
+  let errorMessage = "";
+
+  console.log(`user-to-create =>`, data);
+
+  const state = await user.createAsAdmin(data, (error) => {
+    isError = true;
+    console.log(
+      "other-user-register-error =>",
+      error?.message,
+      " on email :",
+      data.email
+    );
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError) {
+    setTimeout(async () => {
+      res.status(201).json({
+        message: "user has been created.",
+        data: state,
+      });
+    }, 1000);
+  } else {
+    res.status(500).json({
+      message: "Erreur lors de la creation...",
+      details: errorMessage,
+    });
+  }
+};
+
+// fonction qui permetd de mettre à jour un user...
+export const updateUser = async (req: Request, res: Response) => {
+  const user = new UserModel();
+  const data = req.body as UserSimpleCredentials;
+  let isError = false;
+  let errorMessage = "";
+
+  console.log(`user-id =>`, req.params.id);
+  console.log(`user-to-update =>`, data);
+
+  const datas = await user.updateAsAdmin(req.params.id, data, (error) => {
+    isError = true;
+    console.log(
+      "other-user-register-error =>",
+      error?.message,
+      " on email :",
+      data.email
+    );
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError) {
+    setTimeout(async () => {
+      res.status(201).json({
+        message: "user has been updated.",
+        data: datas,
+      });
+    }, 1000);
+  } else {
+    res.status(500).json({
+      message: "Erreur lors de la creation...",
+      details: errorMessage,
+    });
+  }
+};
+
+// fonction qui permet de supprimer un user
+export const deleteUser = async (req: Request, res: Response) => {
+  const user = new UserModel();
+  let isError = false;
+  let errorMessage = "";
+
+  console.log(`user-id =>`, req.params.id);
+
+  const datas = await user.deleteAsAdmin(req.params.id, (error) => {
+    isError = true;
+    console.log(
+      "user-delete-error =>",
+      error?.message,
+      " on user-uid :",
+      req.params.id
+    );
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError) {
+    setTimeout(async () => {
+      res.status(201).json({
+        message: "user has been deleted.",
+        data: datas ? req.params.id : "",
+      });
+    }, 1000);
+  } else {
+    res.status(500).json({
+      message: "Erreur lors de la creation...",
+      details: errorMessage,
+    });
+  }
+};
+
 // fonction qui permet de connecter un utilisateurs
 export const loginUser = async (req: Request, res: Response) => {
   const user = new UserModel();
@@ -86,13 +197,11 @@ export const loginUser = async (req: Request, res: Response) => {
   if (!isError) {
     setTimeout(async () => {
       console.log("user-signin ==>", data.email);
-      res
-        .status(200)
-        .json({
-          message: "user has Connected...",
-          data: datas?.auth,
-          type: datas?.type,
-        });
+      res.status(200).json({
+        message: "user has Connected...",
+        data: datas?.auth,
+        type: datas?.type,
+      });
     }, 1000);
   } else {
     res.status(500).json({
