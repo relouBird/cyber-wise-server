@@ -1,6 +1,7 @@
 import { Fetch } from "../database/fetch";
 import { DatabaseUser } from "../database/user";
 import { Create } from "../database/create";
+import { Update } from "../database/update";
 import { AuthErrorHandler, ErrorHandler } from "../types/database.type";
 import {
   AuthData,
@@ -11,7 +12,6 @@ import {
   UserSimpleCredentials,
 } from "../types/user.type";
 import { PostgrestError, AuthError, User } from "@supabase/supabase-js";
-import { Update } from "../database/update";
 import { convertData } from "../helpers/auth.helper";
 
 export class UserModel {

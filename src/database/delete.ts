@@ -2,7 +2,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import SupabaseConfig from "../config/database.config";
 import { ErrorHandler } from "../types/database.type";
 
-export class Create {
+export class Delete {
   protected name: string = "";
   protected supabase: SupabaseClient;
 
@@ -11,13 +11,30 @@ export class Create {
     this.name = table_name;
   }
 
-  async insert(
-    payload: Object,
+  async DeleteByParameter(
+    parameter: string,
+    value: string,
     errorHandler?: ErrorHandler
-  ): Promise<any | null> {
+  ): Promise<null | any[]> {
     const { data, error } = await this.supabase
       .from(this.name)
-      .insert([payload])
+      .delete()
+      .eq(parameter, value)
+      .select();
+
+    if (error) {
+      errorHandler && errorHandler(error);
+      return null;
+    }
+
+    return data;
+  }
+
+  async DeleteByUid(uid: string, errorHandler?: ErrorHandler) {
+    const { data, error } = await this.supabase
+      .from(this.name)
+      .delete()
+      .eq("uid", uid)
       .select();
 
     if (error) {
@@ -28,10 +45,14 @@ export class Create {
     return data[0];
   }
 
-  async insertMany(payload: Array<Object>, errorHandler?: ErrorHandler) {
+  async DeleteById(
+    id: string,
+    errorHandler?: ErrorHandler
+  ): Promise<null | any> {
     const { data, error } = await this.supabase
       .from(this.name)
-      .insert(payload)
+      .delete()
+      .eq("id", id)
       .select();
 
     if (error) {
@@ -39,6 +60,6 @@ export class Create {
       return null;
     }
 
-    return data;
+    return data[0];
   }
 }
