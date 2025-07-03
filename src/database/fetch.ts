@@ -22,6 +22,24 @@ export class Fetch {
     return data;
   }
 
+  async GetAllByParameter(
+    parameter: string,
+    value: string,
+    errorHandler?: ErrorHandler
+  ): Promise<null | any[]> {
+    const { data, error } = await this.supabase
+      .from(this.name)
+      .select()
+      .eq(parameter, value);
+
+    if (error) {
+      errorHandler && errorHandler(error);
+      return null;
+    }
+
+    return data;
+  }
+
   async GetById(id: string, errorHandler?: ErrorHandler): Promise<null | any> {
     const { data, error } = await this.supabase
       .from(this.name)

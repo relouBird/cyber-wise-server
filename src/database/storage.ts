@@ -17,7 +17,7 @@ export class Storage {
       {
         public: true,
         allowedMimeTypes: ["image/png", "image/jpg", "image/jpeg"],
-        fileSizeLimit: 1024,
+        fileSizeLimit: 10485760,
       }
     );
 
@@ -61,11 +61,13 @@ export class Storage {
   async uploadFile(
     name: string,
     dataImage: File,
+    type: string,
     errorHandler?: StorageErrorHandler
   ) {
     const { data, error } = await this.supabase.storage
       .from(this.name)
       .upload(`${this.name}/${name}`, dataImage, {
+        contentType: type,
         cacheControl: "3600",
         upsert: false,
       });
@@ -92,14 +94,9 @@ export class Storage {
   }
 
   async getUrlFile(name: string, errorHandler?: StorageErrorHandler) {
-    const { data, error } = await this.supabase.storage
+    const { data } = await this.supabase.storage
       .from(this.name)
-      .createSignedUrl(`${this.name}/${name}`, 3600);
-
-    if (error) {
-      errorHandler && errorHandler(error);
-      return null;
-    }
+      .getPublicUrl(`${this.name}/${name}`);
 
     return data;
   }

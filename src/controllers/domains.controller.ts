@@ -62,9 +62,11 @@ export const createDomain = async (req: Request, res: Response) => {
   });
 
   if (!isError) {
-    res
-      .status(200)
-      .json({ message: "Vous venez de creer un domain...", data: data });
+    setTimeout(() => {
+      res
+        .status(200)
+        .json({ message: "Vous venez de creer un domain...", data: data });
+    }, 1500);
   } else {
     res.status(404).send({
       message: "Erreur lors de la récupération des Users",
@@ -74,7 +76,31 @@ export const createDomain = async (req: Request, res: Response) => {
 };
 
 // Ceci permet de delete un domain bien evidemment...
-export const updateDomain = (req: Request, res: Response) => {};
+export const updateDomain = async (req: Request, res: Response) => {
+  const domains = new DomainClass();
+  const receive = req.body as DomainType;
+  let isError = false;
+  let errorMessage = "";
+  console.log("data-update-domains =>", receive);
+  const data = await domains.update(req.params.id, receive, (error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError) {
+    setTimeout(() => {
+      res.status(200).json({
+        message: "Vous venez de mettre à jour un domain...",
+        data: data,
+      });
+    }, 1500);
+  } else {
+    res.status(404).send({
+      message: "Erreur lors de la récupération du Domain...",
+      error: errorMessage,
+    });
+  }
+};
 
 // Ceci permet de delete un domain bien evidemment...
 export const deleteDomain = async (req: Request, res: Response) => {
@@ -84,13 +110,13 @@ export const deleteDomain = async (req: Request, res: Response) => {
   let isError = false;
   let errorMessage = "";
 
-  const data = await domain.delete(id, (error) => {
+  const trainingData = await training.deleteAllTrainingDomain(id, (error) => {
     isError = true;
     errorMessage = error?.message ?? "";
   });
 
   if (!isError) {
-    const trainingData = await training.deleteAllTrainingDomain(id, (error) => {
+    const data = await domain.delete(id, (error) => {
       isError = true;
       errorMessage = error?.message ?? "";
     });

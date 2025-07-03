@@ -4,70 +4,104 @@ import { Update } from "../database/update";
 import { Delete } from "../database/delete";
 import { Storage } from "../database/storage";
 import { ErrorHandler, StorageErrorHandler } from "../types/database.type";
-import { FormationType } from "../types/training.type";
+import { CourseType } from "../types/training.type";
 
-export class TrainingClass {
-  protected name: string = "formations";
-  protected fetch: Fetch;
-  protected createTraining: Create;
-  protected updateTraining: Update;
+export class CoursesClass {
+  protected name: string = "courses";
+  protected fetchClass: Fetch;
+  protected createClass: Create;
+  protected updateClass: Update;
   protected deleteClass: Delete;
   protected storage: Storage;
 
   constructor() {
-    this.fetch = new Fetch(this.name);
-    this.updateTraining = new Update(this.name);
-    this.createTraining = new Create(this.name);
+    this.fetchClass = new Fetch(this.name);
+    this.updateClass = new Update(this.name);
+    this.createClass = new Create(this.name);
     this.deleteClass = new Delete(this.name);
     this.storage = new Storage(this.name);
   }
 
-  async getAll(errorHandler?: ErrorHandler): Promise<FormationType[] | null> {
+  async getAll(errorHandler?: ErrorHandler): Promise<null | CourseType[]> {
     let isError = false;
-    const data = (await this.fetch.GetAll((error) => {
-      errorHandler && errorHandler(error);
+    const data = (await this.fetchClass.GetAll((error) => {
       isError = true;
-    })) as FormationType[];
+      errorHandler && errorHandler(error);
+    })) as CourseType[];
 
     if (!isError) {
       return data;
     }
+    return null;
+  }
 
+  async getAllByFormationId(id: string, errorHandler?: ErrorHandler) {
+    let isError = false;
+    const data = (await this.fetchClass.GetAllByParameter(
+      "formation_id",
+      id,
+      (error) => {
+        isError = true;
+        console.log("erreur-courses =>", error?.message);
+        errorHandler && errorHandler(error);
+      }
+    )) as CourseType[];
+
+    if (!isError) {
+      return data;
+    }
+    return null;
+  }
+
+  async get(
+    id: string,
+    errorHandler?: ErrorHandler
+  ): Promise<null | CourseType> {
+    let isError = false;
+    const data = (await this.fetchClass.GetById(id, (error) => {
+      isError = true;
+      errorHandler && errorHandler(error);
+    })) as CourseType;
+
+    if (!isError) {
+      return data;
+    }
     return null;
   }
 
   async create(
-    req: FormationType,
+    req: CourseType,
     errorHandler?: ErrorHandler
-  ): Promise<FormationType | null> {
-    const data = (await this.createTraining.insert(req, (error) => {
-      console.log("erreur-formation =>", error?.message);
+  ): Promise<CourseType | null> {
+    const data = (await this.createClass.insert(req, (error) => {
+      console.log("erreur-courses =>", error?.message);
       errorHandler && errorHandler(error);
-    })) as FormationType;
+    })) as CourseType;
     return data;
   }
 
   async update(
     id: string,
-    req: FormationType,
+    req: CourseType,
     errorHandler?: ErrorHandler
-  ): Promise<FormationType | null> {
-    const data = (await this.updateTraining.UpdateById(id, req, (error) => {
-      console.log("erreur-formation =>", error?.message);
+  ): Promise<CourseType | null> {
+    const data = (await this.updateClass.UpdateById(id, req, (error) => {
+      console.log("erreur-courses =>", error?.message);
       errorHandler && errorHandler(error);
-    })) as FormationType;
+    })) as CourseType;
     return data;
   }
 
-  async deleteTraining(
+  async delete(
     id: string,
     errorHandler?: ErrorHandler
-  ): Promise<FormationType | null> {
+  ): Promise<CourseType | null> {
     let isError = false;
     const data = (await this.deleteClass.DeleteById(id, (error) => {
+      console.log("erreur-courses =>", error?.message);
       errorHandler && errorHandler(error);
       isError = true;
-    })) as FormationType;
+    })) as CourseType;
 
     if (!isError) {
       if (data) {
@@ -81,19 +115,19 @@ export class TrainingClass {
     return null;
   }
 
-  async deleteAllTrainingDomain(
-    domain_id: string | number,
+  async deleteAllByTraining(
+    formation_id: string | number,
     errorHandler?: ErrorHandler
   ) {
     let isError = false;
     const data = (await this.deleteClass.DeleteByParameter(
-      "domainId",
-      String(domain_id),
+      "formation_id",
+      String(formation_id),
       (error) => {
         errorHandler && errorHandler(error);
         isError = true;
       }
-    )) as FormationType[];
+    )) as CourseType[];
 
     if (!isError) {
       console.log("delete-" + this.name + "-id-" + data);

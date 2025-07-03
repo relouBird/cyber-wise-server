@@ -9,6 +9,7 @@ import AuthRouter from "./routes/auth.route";
 import AdminUserRouter from "./routes/admin-user.route";
 import AdminTrainingsRouter from "./routes/admin-trainings.route";
 import AdminDomainsRouter from "./routes/admin-domains.route";
+import AdminCoursesRouter from "./routes/admin-courses.route";
 
 dotenv.config();
 const PORT = Number(process.env.PORT ?? 3500);
@@ -24,8 +25,9 @@ server.use("/api/auth", AuthRouter);
 
 // appels vers toutes les routes admins
 server.use("/api/admin/users", AdminUserRouter);
-server.use("/api/admin/trainings", AdminTrainingsRouter);
 server.use("/api/admin/domains", AdminDomainsRouter);
+server.use("/api/admin/trainings", AdminTrainingsRouter);
+server.use("/api/admin/courses", AdminCoursesRouter);
 
 // petit get Test...
 server.get("/dev", (req: Request, res: Response) => {

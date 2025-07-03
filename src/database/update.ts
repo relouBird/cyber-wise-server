@@ -20,7 +20,9 @@ export class Update {
     const { data, error } = await this.supabase
       .from(this.name)
       .update(dataToUpdate)
-      .eq(parameter, value);
+      .eq(parameter, value)
+      .select()
+      .single();
 
     if (error) {
       errorHandler && errorHandler(error);
@@ -38,7 +40,9 @@ export class Update {
     const { data, error } = await this.supabase
       .from(this.name)
       .update(dataToUpdate)
-      .eq("id", id);
+      .eq("id", id)
+      .select()
+      .single();
 
     if (error) {
       errorHandler && errorHandler(error);
@@ -56,7 +60,9 @@ export class Update {
     const { data, error } = await this.supabase
       .from(this.name)
       .update(dataToUpdate)
-      .eq("uid", id);
+      .eq("uid", id)
+      .select()
+      .single();
 
     if (error) {
       errorHandler && errorHandler(error);

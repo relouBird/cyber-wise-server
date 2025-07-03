@@ -5,7 +5,7 @@ import multer from "multer";
 
 const AdminTrainingsRouter = express.Router();
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ storage: multer.memoryStorage() }); // ✅ Correct
 
 AdminTrainingsRouter.get(
   "/",
@@ -22,6 +22,7 @@ AdminTrainingsRouter.post(
 
 AdminTrainingsRouter.put(
   "/:id",
+  upload.single("image"),
   authenticateUserByAccessToken,
   TrainingsController.updateTrainings
 );

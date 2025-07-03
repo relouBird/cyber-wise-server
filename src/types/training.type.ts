@@ -9,8 +9,9 @@ export interface DomainType {
   is_native: boolean;
 }
 
-export interface Course {
+export interface CourseType {
   id: number;
+  formation_id: number;
   title: string;
   content: string;
   image?: string;
@@ -21,12 +22,13 @@ export interface FormationType {
   id?: number;
   creator_id?: string;
   categorie: string;
+  level: string;
   color: string;
   title: string;
   description: string;
   domainId: number;
-  image?: string | Blob | File;
+  image?: string | Blob | File | Express.Multer.File;
   active: boolean;
-  courses?: Course[];
+  courses?: CourseType[];
   created_at?: Date;
 }

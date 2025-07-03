@@ -9,12 +9,12 @@ export class DomainClass {
   protected name: string = "domains";
   protected fetch: Fetch;
   protected createDomain: Create;
-  protected update: Update;
+  protected updateDomain: Update;
   protected deleteClass: Delete;
 
   constructor() {
     this.fetch = new Fetch(this.name);
-    this.update = new Update(this.name);
+    this.updateDomain = new Update(this.name);
     this.createDomain = new Create(this.name);
     this.deleteClass = new Delete(this.name);
   }
@@ -73,6 +73,18 @@ export class DomainClass {
     errorHandler?: ErrorHandler
   ): Promise<DomainType | null> {
     const data = (await this.createDomain.insert(req, (error) => {
+      console.log("erreur-formation =>", error?.message);
+      errorHandler && errorHandler(error);
+    })) as DomainType;
+    return data;
+  }
+
+  async update(
+    id: string,
+    req: DomainType,
+    errorHandler?: ErrorHandler
+  ): Promise<DomainType | null> {
+    const data = (await this.updateDomain.UpdateById(id, req, (error) => {
       console.log("erreur-formation =>", error?.message);
       errorHandler && errorHandler(error);
     })) as DomainType;
