@@ -4,100 +4,145 @@ import { Update } from "../database/update";
 import { Delete } from "../database/delete";
 import { Storage } from "../database/storage";
 import { ErrorHandler, StorageErrorHandler } from "../types/database.type";
-import { FormationType } from "../types/training.type";
+import {
+  CampaignDataGetInterface,
+  CampaignDataReturnInterface,
+  CreateCampaignInterface,
+} from "../types/campaigns.type";
+import {
+  reverseTransformCampaignData,
+  transformCampaignData,
+} from "../helpers/campaigns.helper";
 
-export class TrainingClass {
-  protected name: string = "formations";
+export class CampaignClass {
+  protected name: string = "campaigns";
   protected fetch: Fetch;
-  protected createTraining: Create;
-  protected updateTraining: Update;
+  protected createClass: Create;
+  protected updateClass: Update;
   protected deleteClass: Delete;
   protected storage: Storage;
 
   constructor() {
     this.fetch = new Fetch(this.name);
-    this.updateTraining = new Update(this.name);
-    this.createTraining = new Create(this.name);
+    this.updateClass = new Update(this.name);
+    this.createClass = new Create(this.name);
     this.deleteClass = new Delete(this.name);
     this.storage = new Storage(this.name);
   }
 
-  async getAll(errorHandler?: ErrorHandler): Promise<FormationType[] | null> {
+  async getAll(
+    errorHandler?: ErrorHandler
+  ): Promise<CampaignDataReturnInterface[] | null> {
     let isError = false;
     const data = (await this.fetch.GetAll((error) => {
       errorHandler && errorHandler(error);
       isError = true;
-    })) as FormationType[];
+    })) as CampaignDataGetInterface[];
 
     if (!isError) {
-      return data;
+      let tabData: CampaignDataReturnInterface[] = [];
+      for (let i = 0; i < data.length; i++) {
+        tabData.push(transformCampaignData(data[i]));
+      }
+
+      return tabData;
+    }
+
+    return null;
+  }
+
+  async getByOrg(
+    id: string,
+    errorHandler?: ErrorHandler
+  ): Promise<CampaignDataReturnInterface[] | null> {
+    let isError = false;
+    const data = (await this.fetch.GetAllByParameter("org_id", id, (error) => {
+      errorHandler && errorHandler(error);
+      isError = true;
+    })) as CampaignDataGetInterface[];
+
+    if (!isError) {
+      let tabData: CampaignDataReturnInterface[] = [];
+      for (let i = 0; i < data.length; i++) {
+        tabData.push(transformCampaignData(data[i]));
+      }
+
+      return tabData;
     }
 
     return null;
   }
 
   async create(
-    req: FormationType,
+    req: CreateCampaignInterface,
     errorHandler?: ErrorHandler
-  ): Promise<FormationType | null> {
-    const data = (await this.createTraining.insert(req, (error) => {
-      console.log("erreur-formation =>", error?.message);
+  ): Promise<CampaignDataReturnInterface | null> {
+    const data = (await this.createClass.insert(req, (error) => {
+      console.log("erreur-activité =>", error?.message);
       errorHandler && errorHandler(error);
-    })) as FormationType;
-    return data;
+    })) as CampaignDataGetInterface;
+    return data && transformCampaignData(data);
   }
 
   async update(
     id: string,
-    req: FormationType,
+    req: CampaignDataReturnInterface,
     errorHandler?: ErrorHandler
-  ): Promise<FormationType | null> {
-    const data = (await this.updateTraining.UpdateById(id, req, (error) => {
-      console.log("erreur-formation =>", error?.message);
-      errorHandler && errorHandler(error);
-    })) as FormationType;
-    return data;
+  ): Promise<CampaignDataReturnInterface | null> {
+    const data = (await this.updateClass.UpdateById(
+      id,
+      reverseTransformCampaignData(req),
+      (error) => {
+        console.log("erreur-activité =>", error?.message);
+        errorHandler && errorHandler(error);
+      }
+    )) as CampaignDataGetInterface;
+    return transformCampaignData(data);
   }
 
-  async deleteTraining(
+  async deleteCampaign(
     id: string,
     errorHandler?: ErrorHandler
-  ): Promise<FormationType | null> {
+  ): Promise<CampaignDataReturnInterface | null> {
     let isError = false;
     const data = (await this.deleteClass.DeleteById(id, (error) => {
       errorHandler && errorHandler(error);
       isError = true;
-    })) as FormationType;
+    })) as CampaignDataGetInterface;
 
     if (!isError) {
       if (data) {
         console.log("delete-" + this.name + "-id-with-" + data);
       } else {
-        console.log(`no-formation-to-delete..`);
+        console.log(`no-campaign-to-delete..`);
       }
-      return data;
+      return transformCampaignData(data);
     }
 
     return null;
   }
 
-  async deleteAllTrainingDomain(
-    domain_id: string | number,
+  async deleteAll(
+    org_id: string,
     errorHandler?: ErrorHandler
-  ) {
+  ): Promise<CampaignDataReturnInterface[] | null> {
     let isError = false;
     const data = (await this.deleteClass.DeleteByParameter(
-      "domainId",
-      String(domain_id),
+      "org_id",
+      org_id,
       (error) => {
         errorHandler && errorHandler(error);
         isError = true;
       }
-    )) as FormationType[];
+    )) as CampaignDataGetInterface[];
 
     if (!isError) {
       console.log("delete-" + this.name + "-id-" + data);
-      return data;
+      let tabData: CampaignDataReturnInterface[] = [];
+      for (let i = 0; i < data.length; i++) {
+        tabData.push(transformCampaignData(data[i]));
+      }
+      return tabData;
     }
 
     return null;

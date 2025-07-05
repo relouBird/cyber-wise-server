@@ -49,6 +49,27 @@ export class UserModel {
     // return datasToReturn;
   }
 
+  async getAllByOrgId(
+    id: string,
+    errorHandler?: AuthErrorHandler
+  ): Promise<null | UserSimpleCredentials[]> {
+    let isError: boolean = false;
+    let datasToReturn: UserSimpleCredentials[] = [];
+    const datas = await this.databaseUser.getAllAsAdmin((error) => {
+      errorHandler && errorHandler(error);
+      isError = true;
+      console.log(`${this.name}-error => ${error}`);
+    });
+
+    if (isError) {
+      return null;
+    }
+    for (let i = 0; i < datas.length; i++) {
+      datasToReturn.push(convertData(datas[i]));
+    }
+    return datasToReturn.filter((u) => u.role != undefined && u.org_id == id);
+  }
+
   /*
   Lire la documentation sur la classe de la bd User
   */
@@ -129,7 +150,6 @@ export class UserModel {
   Ceci permet de mettre à jour un utilisateur qui n'est pas le possesseur de l'entreprise
   */
   async updateAsAdmin(
-    id: string,
     dataToUpdate: UserSimpleCredentials,
     errorHandler: AuthErrorHandler
   ): Promise<UserSimpleCredentials | null> {
@@ -137,6 +157,36 @@ export class UserModel {
 
     const data = await this.databaseUser.updateAsAdmin(
       dataToUpdate,
+      (error) => {
+        errorHandler && errorHandler(error);
+        isError = true;
+      }
+    );
+
+    if (!isError) {
+      return convertData(data);
+    }
+
+    return null;
+  }
+
+  /*
+  Lire la documentation...
+  Ceci permet de mettre à jour un utilisateur sa date de connexion qui n'est pas le possesseur de l'entreprise
+  */
+  async updateLoginAsAdmin(
+    id: string,
+    dataToUpdate: UserSimpleCredentials,
+    errorHandler: AuthErrorHandler
+  ): Promise<UserSimpleCredentials | null> {
+    let isError = false;
+
+    const data = await this.databaseUser.updateConnexionAsAdmin(
+      id,
+      {
+        lastLogin: dataToUpdate.lastLogin ?? "",
+        status: dataToUpdate.status,
+      },
       (error) => {
         errorHandler && errorHandler(error);
         isError = true;

@@ -88,9 +88,7 @@ export const createCourse = async (req: Request, res: Response) => {
   // Données reçues
   const imageFile = req.file; // vient de multer (en mémoire)
 
-  const imageName = imageFile
-    ? imageFile.originalname.replace(/\s+/g, "_")
-    : "";
+  const imageName = imageFile ? String(Math.round(Math.random() * 1000000)) : "";
 
   const reqBody: CourseType = {
     ...req.body,
@@ -98,11 +96,6 @@ export const createCourse = async (req: Request, res: Response) => {
   };
 
   console.log("data-to-create-course =>", reqBody);
-
-  const data = await courses.create(reqBody, (error) => {
-    isError = true;
-    errorMessage = error?.message ?? "";
-  });
 
   if (imageFile) {
     await courses.uploadImage(
@@ -116,13 +109,13 @@ export const createCourse = async (req: Request, res: Response) => {
       }
     );
 
-    const data = await courses.getUrl(imageName, (error) => {
-      isError = true;
-      errorMessage = error?.message ?? "";
-      console.log("erreur-upload-image =>", errorMessage);
-    });
+    try {
+      const data = await courses.getUrl(imageName);
 
-    reqBody.image = data ?? "";
+      reqBody.image = data ?? "";
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   if (!isError) {
@@ -175,9 +168,7 @@ export const updateCourse = async (req: Request, res: Response) => {
   const imageFile = req.file; // vient de multer (en mémoire)
 
   const imageName =
-    typeof imageFile == "object"
-      ? imageFile.originalname.replace(/\s+/g, "_")
-      : "";
+    typeof imageFile == "object" ? String(Math.round(Math.random() * 1000000)) : "";
 
   console.log("data-to-update-course =>", dataIncome);
 
@@ -198,13 +189,13 @@ export const updateCourse = async (req: Request, res: Response) => {
       }
     );
 
-    const data = await courses.getUrl(imageName, (error) => {
-      isError = true;
-      errorMessage = error?.message ?? "";
-      console.log("erreur-upload-image =>", errorMessage);
-    });
+    try {
+      const data = await courses.getUrl(imageName);
 
-    reqBody.image = data ?? "";
+      reqBody.image = data ?? "";
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   if (!isError) {

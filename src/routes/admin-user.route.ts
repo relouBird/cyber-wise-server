@@ -10,6 +10,11 @@ AdminUserRouter.get(
   UserController.getAllUsers
 );
 
+AdminUserRouter.get(
+  "/:id",
+  authenticateUserByAccessToken,
+  UserController.getAllUsersByOrgId
+);
 
 AdminUserRouter.put(
   "/:id",

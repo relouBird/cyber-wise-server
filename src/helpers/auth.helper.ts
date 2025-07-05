@@ -55,8 +55,10 @@ export const convertData = (data: User | null): UserSimpleCredentials => {
       data.user_metadata as DetailSimpleInterface;
     const userRole: UserSimpleCredentials = {
       id: data.id,
+      org_id: meta.org_id,
       firstName: meta.firstName,
       lastName: meta.lastName,
+      lastLogin: meta.lastLogin,
       email: data.email ?? "",
       phone: meta.phone,
       password: meta.firstName + meta.lastName + "@123",
@@ -67,6 +69,7 @@ export const convertData = (data: User | null): UserSimpleCredentials => {
   }
   return {
     id: "",
+    org_id: "",
     firstName: "",
     lastName: "",
     email: "",

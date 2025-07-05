@@ -149,8 +149,9 @@ export class CoursesClass {
       path: string;
       fullPath: string;
     } | null = null;
+    const buck = await this.storage.getBucket();
 
-    if (await this.storage.getBucket()) {
+    if (buck) {
       data = await this.storage.uploadFile(name, dataImage, type, (error) => {
         isError = true;
         errorHandler && errorHandler(error);
@@ -169,30 +170,19 @@ export class CoursesClass {
     return data;
   }
 
-  async getUrl(
-    name: string,
-    errorHandler?: StorageErrorHandler
-  ): Promise<string | null> {
-    let isError: boolean = false;
+  async getUrl(name: string): Promise<string> {
     let data: {
       publicUrl: string;
     } | null = null;
-    if (await this.storage.getBucket()) {
-      data = await this.storage.getUrlFile(name, (error) => {
-        isError = true;
-        errorHandler && errorHandler(error);
-      });
-    } else {
-      await this.storage.createBucket();
-      data = await this.storage.getUrlFile(name, (error) => {
-        isError = true;
-        errorHandler && errorHandler(error);
-      });
-    }
-
-    if (isError) {
-      return null;
-    }
+    try {
+      const buck = await this.storage.getBucket();
+      if (buck) {
+        data = await this.storage.getUrlFile(name);
+      } else {
+        await this.storage.createBucket();
+        data = await this.storage.getUrlFile(name);
+      }
+    } catch (error) {}
     return data?.publicUrl ?? "";
   }
 }

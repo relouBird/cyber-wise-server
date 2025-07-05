@@ -1,56 +1,44 @@
 import { Request, Response } from "express";
-import { TrainingClass } from "../models/training.model";
-import { FormationType } from "../types/training.type";
-import { CoursesClass } from "../models/courses.model";
+import { CampaignClass } from "../models/campaigns.model";
+import {
+  CampaignDataReturnInterface,
+  CreateCampaignInterface,
+} from "../types/campaigns.type";
 
-// Permet de recuperer toutes les formations precises...
-export const getAllTrainings = async (req: Request, res: Response) => {
-  const trainings = new TrainingClass();
-  const courses = new CoursesClass();
+// ceci permet de recuperer toutes les campagnes recentes...
+export const getAllCampaigns = async (req: Request, res: Response) => {};
+
+// ceci permet de recuperer toutes les campagnes recentes d'une organisation...
+export const getAllOrgCampaigns = async (req: Request, res: Response) => {
+  const campaigns = new CampaignClass();
   let isError = false;
   let errorMessage = "";
-  const data = await trainings.getAll((error) => {
+  const data = await campaigns.getByOrg(req.params.id, (error) => {
     isError = true;
     errorMessage = error?.message ?? "";
   });
 
   if (!isError && data) {
-    const newData: FormationType[] = [];
-
-    for (let i = 0; i < data.length; i++) {
-      let monoData = data[i];
-
-      let coursesList = await courses.getAllByFormationId(
-        String(monoData.id),
-        (error) => {
-          console.log("something-where-wrong-image =>", error?.message);
-        }
-      );
-
-      newData.push({
-        ...monoData,
-        courses: coursesList ? coursesList : [],
-      });
-    }
-
-    console.log("data-training =>", newData);
-    res
-      .status(200)
-      .json({ message: "Toutes les Formations sont là...", data: newData });
+    console.log("data-campaigns =>", data);
+    res.status(200).json({
+      message: `Tout les campaigns de l'org ${req.params.id}...`,
+      data: data,
+    });
   } else {
     res.status(404).send({
-      message: "Erreur lors de la récupération des Users",
-      details: errorMessage,
+      message: "Erreur lors de la récupération des Campagnes",
+      error: errorMessage,
     });
   }
 };
 
-// Permet de recuperer un une formation en particulier...
-export const getTrainings = (req: Request, res: Response) => {};
+/**
+ * Ceci permet de creer une campagne recente...
+ * ça peut etre un ajout d'utilisateur une suppression ou une mise à jour...
+ */
+export const createCampaign = async (req: Request, res: Response) => {
+  const campaigns = new CampaignClass();
 
-// Ceci permet de delete une formation bien evidemment...
-export const createTrainings = async (req: Request, res: Response) => {
-  const trainings = new TrainingClass();
   let isError = false;
   let errorMessage = "";
 
@@ -62,17 +50,19 @@ export const createTrainings = async (req: Request, res: Response) => {
   // Données reçues
   const imageFile = req.file; // vient de multer (en mémoire)
 
-  const imageName = imageFile ? String(Math.round(Math.random() * 1000000)) : "";
+  const imageName = imageFile
+    ? String(Math.round(Math.random() * 1000000))
+    : "";
 
-  const reqBody: FormationType = {
+  const reqBody: CreateCampaignInterface = {
     ...req.body,
     image: "",
   };
 
-  console.log("data-receive =>", reqBody);
+  console.log("data-to-create-campaign =>", reqBody);
 
   if (imageFile) {
-    await trainings.uploadImage(
+    await campaigns.uploadImage(
       imageName,
       imageFile.buffer as unknown as File, // ✅ ici on envoie un Buffer, pas besoin de "File"
       imageFile.mimetype,
@@ -83,7 +73,7 @@ export const createTrainings = async (req: Request, res: Response) => {
       }
     );
 
-    const data = await trainings.getUrl(imageName);
+    const data = await campaigns.getUrl(imageName);
 
     reqBody.image = data ?? "";
   }
@@ -91,7 +81,7 @@ export const createTrainings = async (req: Request, res: Response) => {
   if (!isError) {
     console.log("On upload Correctement =>", reqBody.image);
 
-    const data = await trainings.create(reqBody, (error) => {
+    const data = await campaigns.create(reqBody, (error) => {
       isError = true;
       errorMessage = error?.message ?? "";
       console.log("erreur-creation =>", errorMessage);
@@ -100,30 +90,31 @@ export const createTrainings = async (req: Request, res: Response) => {
     if (!isError) {
       setTimeout(() => {
         res.status(200).json({
-          message: "Formation créée avec success...",
+          message: "Campagne créée avec success...",
           data: data,
         });
       }, 1500);
     } else {
       setTimeout(() => {
         res
-          .status(500)
+          .status(404)
           .json({ message: "Erreur upload image", details: errorMessage });
       }, 1500);
     }
   } else {
-    setTimeout(() => {
-      res.status(500).json({
-        message: "Erreur lors de la création",
-        details: errorMessage,
-      });
-    }, 1500);
+    res.status(500).send({
+      message: "Erreur lors de la récupération des Campagnes",
+      error: errorMessage,
+    });
   }
 };
 
-// Ceci permet de delete une formation bien evidemment...
-export const updateTrainings = async (req: Request, res: Response) => {
-  const trainings = new TrainingClass();
+/**
+ * Ceci permet de mettre à jour une campagne recente...
+ * ça peut etre un ajout d'une formation, une suppression ou une participation d'un utilisateur...
+ */
+export const updateCampaign = async (req: Request, res: Response) => {
+  const campaigns = new CampaignClass();
   let isError = false;
   let errorMessage = "";
 
@@ -135,7 +126,7 @@ export const updateTrainings = async (req: Request, res: Response) => {
   let dataIncome = {
     ...req.body,
     image: req.file,
-  } as FormationType;
+  } as CampaignDataReturnInterface;
 
   // Données reçues
   const imageFile = req.file; // vient de multer (en mémoire)
@@ -147,12 +138,12 @@ export const updateTrainings = async (req: Request, res: Response) => {
 
   console.log("formation-to-update =>", dataIncome);
 
-  const reqBody: FormationType = {
+  const reqBody: CampaignDataReturnInterface = {
     ...req.body,
   };
 
   if (imageFile && typeof imageFile == "object") {
-    await trainings.uploadImage(
+    await campaigns.uploadImage(
       imageName,
       imageFile.buffer as unknown as File, // ✅ ici on envoie un Buffer, pas besoin de "File"
       imageFile.mimetype,
@@ -163,7 +154,7 @@ export const updateTrainings = async (req: Request, res: Response) => {
       }
     );
 
-    const data = await trainings.getUrl(imageName);
+    const data = await campaigns.getUrl(imageName);
 
     reqBody.image = data ?? "";
   }
@@ -171,7 +162,7 @@ export const updateTrainings = async (req: Request, res: Response) => {
   if (!isError) {
     console.log("On upload Correctement =>", reqBody.image);
 
-    const data = await trainings.update(req.params.id, reqBody, (error) => {
+    const data = await campaigns.update(req.params.id, reqBody, (error) => {
       isError = true;
       errorMessage = error?.message ?? "";
       console.log("erreur-creation =>", errorMessage);
@@ -180,7 +171,7 @@ export const updateTrainings = async (req: Request, res: Response) => {
     if (!isError) {
       setTimeout(() => {
         res.status(200).json({
-          message: "Formation créée avec success...",
+          message: "Campagne modifiée avec success...",
           data: data,
         });
       }, 1500);
@@ -203,27 +194,26 @@ export const updateTrainings = async (req: Request, res: Response) => {
 
 // Ceci permet de delete une formation bien evidemment...
 export const deleteTrainings = async (req: Request, res: Response) => {
-  const courses = new CoursesClass();
-  const training = new TrainingClass();
+  // const courses = new CoursesClass();
+  const campaigns = new CampaignClass();
   const id = req.params.id;
   let isError = false;
   let errorMessage = "";
 
-  const coursesData = await courses.deleteAllByTraining(id, (error) => {
-    isError = true;
-    errorMessage = error?.message ?? "";
-  });
+  // const coursesData = await courses.deleteAllByTraining(id, (error) => {
+  //   isError = true;
+  //   errorMessage = error?.message ?? "";
+  // });
 
   if (!isError) {
-    const data = await training.deleteTraining(id, (error) => {
+    const data = await campaigns.deleteCampaign(id, (error) => {
       isError = true;
       errorMessage = error?.message ?? "";
     });
     setTimeout(() => {
       res.status(200).json({
-        message: "Formation d'id " + data?.id + " a été supprimé...",
+        message: "Campagne d'id " + data?.id + " a été supprimé...",
         data: data,
-        coursesListDeleted: coursesData,
       });
     }, 1500);
   } else {
@@ -233,5 +223,3 @@ export const deleteTrainings = async (req: Request, res: Response) => {
     });
   }
 };
-
-export const deleteManyTrainings = (req: Request, res: Response) => {};

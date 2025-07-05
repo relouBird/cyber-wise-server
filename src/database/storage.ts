@@ -48,7 +48,7 @@ export class Storage {
   }
 
   async getBucket(errorHandler?: StorageErrorHandler) {
-    const { data, error } = await this.supabase.storage.getBucket("avatars");
+    const { data, error } = await this.supabase.storage.getBucket(this.name);
 
     if (error) {
       errorHandler && errorHandler(error);
@@ -66,10 +66,10 @@ export class Storage {
   ) {
     const { data, error } = await this.supabase.storage
       .from(this.name)
-      .upload(`${this.name}/${name}`, dataImage, {
+      .upload(`public/${name}`, dataImage, {
         contentType: type,
         cacheControl: "3600",
-        upsert: false,
+        upsert: true,
       });
 
     if (error) {
@@ -83,7 +83,7 @@ export class Storage {
   async downloadFile(name: string, errorHandler?: StorageErrorHandler) {
     const { data, error } = await this.supabase.storage
       .from(this.name)
-      .download(`${this.name}/${name}`);
+      .download(`public/${name}`);
 
     if (error) {
       errorHandler && errorHandler(error);
@@ -93,10 +93,10 @@ export class Storage {
     return data;
   }
 
-  async getUrlFile(name: string, errorHandler?: StorageErrorHandler) {
+  async getUrlFile(name: string) {
     const { data } = await this.supabase.storage
       .from(this.name)
-      .getPublicUrl(`${this.name}/${name}`);
+      .getPublicUrl(`public/${name}`);
 
     return data;
   }

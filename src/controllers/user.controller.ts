@@ -17,6 +17,29 @@ export const getAllUsers = async (req: Request, res: Response) => {
   });
 
   if (!isError) {
+    console.log("tout les users...", data);
+    res.status(200).json({ message: "Tout les utilisateurs", data: data });
+  } else {
+    res.status(500).send({
+      message: "Erreur lors de la récupération des Users",
+      error: errorMessage,
+    });
+  }
+};
+
+// fonction qui est appelé lors de la requete et permettant de recuperer tout les users
+export const getAllUsersByOrgId = async (req: Request, res: Response) => {
+  const user = new UserModel();
+  let isError = false;
+  let errorMessage = "";
+
+  const data = await user.getAllByOrgId(req.params.id, (error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError) {
+    console.log("tout les users...", data);
     res.status(200).json({ message: "Tout les utilisateurs", data: data });
   } else {
     res.status(500).send({
@@ -116,7 +139,44 @@ export const updateUser = async (req: Request, res: Response) => {
   console.log(`user-id =>`, req.params.id);
   console.log(`user-to-update =>`, data);
 
-  const datas = await user.updateAsAdmin(req.params.id, data, (error) => {
+  const datas = await user.updateAsAdmin(data, (error) => {
+    isError = true;
+    console.log(
+      "other-user-register-error =>",
+      error?.message,
+      " on email :",
+      data.email
+    );
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError) {
+    setTimeout(async () => {
+      res.status(201).json({
+        message: "user has been updated.",
+        data: datas,
+      });
+    }, 1000);
+  } else {
+    res.status(500).json({
+      message: "Erreur lors de la creation...",
+      details: errorMessage,
+    });
+  }
+};
+
+//fonction qui permet de mettre en actif un utilisateurs qui vient de se connecter a son compte
+// fonction qui permetd de mettre à jour un user...
+export const updateLoginUser = async (req: Request, res: Response) => {
+  const user = new UserModel();
+  const data = req.body as UserSimpleCredentials;
+  let isError = false;
+  let errorMessage = "";
+
+  console.log(`user-id =>`, req.params.id);
+  console.log(`user-to-update =>`, data);
+
+  const datas = await user.updateLoginAsAdmin(req.params.id, data, (error) => {
     isError = true;
     console.log(
       "other-user-register-error =>",

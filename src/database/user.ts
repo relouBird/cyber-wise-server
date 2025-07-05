@@ -5,6 +5,7 @@ import {
   AuthData,
   Credentials,
   SubscriptionObject,
+  UpdateUserSimpleCredentials,
   UserLoginCredentials,
   UserSimpleCredentials,
 } from "../types/user.type";
@@ -183,8 +184,10 @@ export class DatabaseUser {
       password: credentials.firstName + credentials.lastName + "@123",
       email_confirm: true,
       user_metadata: {
+        org_id: credentials.org_id,
         firstName: credentials.firstName,
         lastName: credentials.lastName,
+        lastLogin: "",
         phone: credentials.phone,
         role: credentials.role,
         status: credentials.status,
@@ -235,6 +238,31 @@ export class DatabaseUser {
         },
       }
     );
+
+    if (error) {
+      errorHandler && errorHandler(error);
+      return null;
+    }
+    return data.user;
+  }
+
+  /**
+   * Cette fonction permet de mettre à jour un Utilisateur comme Admin
+   * @param {UserSimpleCredentials} credentials - ce sont les données de l'utilisateurs
+   * @param {AuthErrorHandler} errorHandler  - ceci est la fonction qui prend en parametre l'erreur et qui permet de la gerer
+   * @returns {Promise<null | AuthData>}
+   */
+  async updateConnexionAsAdmin(
+    id: string,
+    credentials: UpdateUserSimpleCredentials,
+    errorHandler?: AuthErrorHandler
+  ): Promise<null | User> {
+    const { data, error } = await this.auth_admin.updateUserById(id, {
+      user_metadata: {
+        lastLogin: credentials.lastLogin,
+        status: credentials.status,
+      },
+    });
 
     if (error) {
       errorHandler && errorHandler(error);

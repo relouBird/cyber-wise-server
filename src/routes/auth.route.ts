@@ -9,4 +9,6 @@ AuthRouter.post("/register", UserController.createAdminUser);
 
 AuthRouter.post("/login", UserController.loginUser);
 
+AuthRouter.put("/:id/update", UserController.updateLoginUser);
+
 export default AuthRouter;

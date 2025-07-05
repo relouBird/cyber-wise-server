@@ -7,8 +7,9 @@ export interface Credentials {
 
 export type RoleType = "Admin" | "Manager" | "Employé" | "Invité";
 
-export interface DetailSimpleInterface{
+export interface DetailSimpleInterface {
   id?: number;
+  org_id: string;
   firstName: string;
   lastName: string;
   role: "enterprise" | RoleType;
@@ -16,10 +17,11 @@ export interface DetailSimpleInterface{
   status: "Actif" | "Inactif";
   lastLogin?: string;
   avatar?: string;
-} 
+}
 
 export interface UserSimpleCredentials {
   id?: string;
+  org_id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -29,6 +31,11 @@ export interface UserSimpleCredentials {
   status: "Actif" | "Inactif";
   lastLogin?: string;
   avatar?: string;
+}
+
+export interface UpdateUserSimpleCredentials {
+  lastLogin: string;
+  status: "Actif" | "Inactif";
 }
 
 export interface UserLoginCredentials extends Credentials {
@@ -45,8 +52,8 @@ export type AuthData = {
 };
 
 export type SubscriptionObject = {
-    subscription: Subscription;
-  }
+  subscription: Subscription;
+};
 
 export type LoginData = {
   auth: AuthData | null;
