@@ -78,7 +78,7 @@ export class CampaignClass {
     errorHandler?: ErrorHandler
   ): Promise<CampaignDataReturnInterface | null> {
     const data = (await this.createClass.insert(req, (error) => {
-      console.log("erreur-activité =>", error?.message);
+      console.log("erreur-campagne =>", error?.message);
       errorHandler && errorHandler(error);
     })) as CampaignDataGetInterface;
     return data && transformCampaignData(data);
@@ -93,7 +93,7 @@ export class CampaignClass {
       id,
       reverseTransformCampaignData(req),
       (error) => {
-        console.log("erreur-activité =>", error?.message);
+        console.log("erreur-campagne =>", error?.message);
         errorHandler && errorHandler(error);
       }
     )) as CampaignDataGetInterface;
@@ -161,10 +161,8 @@ export class CampaignClass {
       fullPath: string;
     } | null = null;
 
-    const buck = await this.storage.getBucket();
-
     try {
-      if (buck) {
+      if (await this.storage.getBucket()) {
         data = await this.storage.uploadFile(name, dataImage, type, (error) => {
           isError = true;
           errorHandler && errorHandler(error);

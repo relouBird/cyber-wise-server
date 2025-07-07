@@ -27,7 +27,7 @@ AdminCampaignsRouter.post(
 );
 
 AdminCampaignsRouter.put(
-  "/training",
+  "/:id",
   authenticateUserByAccessToken,
   upload.single("image"),
   CampaignsController.updateCampaign

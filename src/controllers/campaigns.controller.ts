@@ -47,6 +47,8 @@ export const createCampaign = async (req: Request, res: Response) => {
     console.log("Taille du buffer :", req.file?.buffer?.length); // > 0
   }
 
+  console.log("data-to-create-campaign =>", req.body);
+
   // Données reçues
   const imageFile = req.file; // vient de multer (en mémoire)
 
@@ -56,6 +58,8 @@ export const createCampaign = async (req: Request, res: Response) => {
 
   const reqBody: CreateCampaignInterface = {
     ...req.body,
+    targetUsers: JSON.parse(req.body.targetUsers),
+    formations: JSON.parse(req.body.formations),
     image: "",
   };
 
@@ -117,6 +121,8 @@ export const updateCampaign = async (req: Request, res: Response) => {
   const campaigns = new CampaignClass();
   let isError = false;
   let errorMessage = "";
+
+  console.log("formation-to-update =>", req.body);
 
   if (req.file) {
     console.log("Fichier reçu :", req.file); // tu devrais voir le fichier complet
