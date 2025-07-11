@@ -24,6 +24,7 @@ server.start();
 server.use("/api/test", TestRouter);
 server.use("/api/users", UserRouter);
 server.use("/api/auth", AuthRouter);
+server.use("/api/trainings", AdminTrainingsRouter);
 
 // appels vers toutes les routes admins
 server.use("/api/admin/users", AdminUserRouter);

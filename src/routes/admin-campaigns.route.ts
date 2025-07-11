@@ -14,9 +14,15 @@ AdminCampaignsRouter.get(
 );
 
 AdminCampaignsRouter.get(
-  "/:id",
+  "/:id/org",
   authenticateUserByAccessToken,
   CampaignsController.getAllOrgCampaigns
+);
+
+AdminCampaignsRouter.get(
+  "/:id/users",
+  authenticateUserByAccessToken,
+  CampaignsController.getAllCampaignsUsers
 );
 
 AdminCampaignsRouter.post(
@@ -31,6 +37,12 @@ AdminCampaignsRouter.put(
   authenticateUserByAccessToken,
   upload.single("image"),
   CampaignsController.updateCampaign
+);
+
+AdminCampaignsRouter.delete(
+  "/:id",
+  authenticateUserByAccessToken,
+  CampaignsController.deleteCampaign
 );
 
 export default AdminCampaignsRouter;

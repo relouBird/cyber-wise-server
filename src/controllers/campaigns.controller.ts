@@ -4,6 +4,8 @@ import {
   CampaignDataReturnInterface,
   CreateCampaignInterface,
 } from "../types/campaigns.type";
+import { SubscriptionTrainingClass } from "../models/subscription-training.model";
+import { SubscriptionTrainingGet } from "../types/sub-training.type";
 
 // ceci permet de recuperer toutes les campagnes recentes...
 export const getAllCampaigns = async (req: Request, res: Response) => {};
@@ -32,12 +34,38 @@ export const getAllOrgCampaigns = async (req: Request, res: Response) => {
   }
 };
 
+// ceci permet de recuperer tout les utilisateurs d'une campagne...
+export const getAllCampaignsUsers = async (req: Request, res: Response) => {
+  // const campaigns = new CampaignClass();
+  const subTraining = new SubscriptionTrainingClass();
+  let isError = false;
+  let errorMessage = "";
+  const data = await subTraining.getAllByCampaignId(req.params.id, (error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError && data) {
+    console.log("data-campaigns =>", data);
+    res.status(200).json({
+      message: `Tout les campaigns de l'org ${req.params.id}...`,
+      data: data,
+    });
+  } else {
+    res.status(404).send({
+      message: "Erreur lors de la récupération des Campagnes",
+      error: errorMessage,
+    });
+  }
+};
+
 /**
  * Ceci permet de creer une campagne recente...
  * ça peut etre un ajout d'utilisateur une suppression ou une mise à jour...
  */
 export const createCampaign = async (req: Request, res: Response) => {
   const campaigns = new CampaignClass();
+  const subTraining = new SubscriptionTrainingClass();
 
   let isError = false;
   let errorMessage = "";
@@ -91,7 +119,25 @@ export const createCampaign = async (req: Request, res: Response) => {
       console.log("erreur-creation =>", errorMessage);
     });
 
-    if (!isError) {
+    if (data) {
+      let dataToCreate: SubscriptionTrainingGet[] = [];
+      for (let i = 0; i < data.targetUsers.length; i++) {
+        for (let j = 0; j < data.formations.length; j++) {
+          dataToCreate.push({
+            uid: data.targetUsers[i],
+            cid: data.id,
+            fid: data.formations[j],
+            progress: 0,
+          });
+        }
+      }
+
+      console.log("data-to-create =>", dataToCreate);
+      await subTraining.createMany(dataToCreate, (error) => {
+        isError = true;
+        errorMessage = error?.message ?? "";
+        console.log("erreur-creation-sub =>", errorMessage);
+      });
       setTimeout(() => {
         res.status(200).json({
           message: "Campagne créée avec success...",
@@ -199,8 +245,7 @@ export const updateCampaign = async (req: Request, res: Response) => {
 };
 
 // Ceci permet de delete une formation bien evidemment...
-export const deleteTrainings = async (req: Request, res: Response) => {
-  // const courses = new CoursesClass();
+export const deleteCampaign = async (req: Request, res: Response) => {
   const campaigns = new CampaignClass();
   const id = req.params.id;
   let isError = false;

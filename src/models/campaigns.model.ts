@@ -51,6 +51,23 @@ export class CampaignClass {
     return null;
   }
 
+  async get(
+    id: string,
+    errorHandler?: ErrorHandler
+  ): Promise<CampaignDataReturnInterface | null> {
+    let isError = false;
+    const data = (await this.fetch.GetById(id, (error) => {
+      errorHandler && errorHandler(error);
+      isError = true;
+    })) as CampaignDataGetInterface;
+
+    if (!isError) {
+      return transformCampaignData(data);
+    }
+
+    return null;
+  }
+
   async getByOrg(
     id: string,
     errorHandler?: ErrorHandler

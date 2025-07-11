@@ -46,7 +46,28 @@ export const getAllTrainings = async (req: Request, res: Response) => {
 };
 
 // Permet de recuperer un une formation en particulier...
-export const getTrainings = (req: Request, res: Response) => {};
+export const getTrainingsToSuscription = (req: Request, res: Response) => {
+  const trainings = new TrainingClass();
+  let isError = false;
+  let errorMessage = "";
+
+  const data = trainings.getAll((error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+  });
+
+  if (!isError && data) {
+    res.status(200).json({
+      message: "Toutes les Formations sont là...",
+      data: data,
+    });
+  } else {
+    res.status(404).send({
+      message: "Erreur lors de la récupération des Users",
+      details: errorMessage,
+    });
+  }
+};
 
 // Ceci permet de delete une formation bien evidemment...
 export const createTrainings = async (req: Request, res: Response) => {

@@ -104,18 +104,16 @@ export class UserModel {
     });
     if (!isError) {
       await this.createUserRole.insert(
-        [
-          {
-            uid: data?.user.id ?? "",
-            firstName: "Admin",
-            lastName: "",
-            email: credentials.email,
-            status: "Actif",
-            phone: null,
-            password: credentials.password,
-            role: "enterprise",
-          },
-        ],
+        {
+          uid: data?.user.id ?? "",
+          firstName: "Admin",
+          lastName: "",
+          email: credentials.email,
+          status: "Actif",
+          phone: null,
+          password: credentials.password,
+          role: "enterprise",
+        },
         (error) => {
           console.log("erreur-creation-role =>", error?.message);
           const err = error as unknown as AuthError;
@@ -169,6 +167,10 @@ export class UserModel {
 
     return null;
   }
+
+  /**
+   * Ceci permet de recuperer la liste des utilisateurs
+   */
 
   /*
   Lire la documentation...

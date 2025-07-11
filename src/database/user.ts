@@ -150,7 +150,7 @@ export class DatabaseUser {
   /// --------------------------------------------------------------------------------------------
 
   /**
-   * Cette fonction permet de creer un Utilisateur comme Admin
+   * Cette fonction permet de recuperer les Utilisateurs comme Admin
    * @param {UserLoginCredentials} credentials - ce sont les données de l'utilisateurs
    * @param {AuthErrorHandler} errorHandler  - ceci est la fonction qui prend en parametre l'erreur et qui permet de la gerer
    * @returns {Promise<[] | User[]>}
@@ -167,6 +167,26 @@ export class DatabaseUser {
     }
 
     return users;
+  }
+
+  /**
+   * Cette fonction permet de recuperer un Utilisateur comme Admin
+   * @param {string} id - c'est l'identifiant de l'utilisateurs
+   * @param {AuthErrorHandler} errorHandler  - ceci est la fonction qui prend en parametre l'erreur et qui permet de la gerer
+   * @returns {Promise<null | User>}
+   */
+  async getUserAsAdmin(
+    id: string,
+    errorHandler?: AuthErrorHandler
+  ): Promise<null | User> {
+    const { data, error } = await this.auth_admin.getUserById(id);
+
+    if (error) {
+      errorHandler && errorHandler(error);
+      return null;
+    }
+
+    return data.user;
   }
 
   /**
