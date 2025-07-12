@@ -1,5 +1,5 @@
 export interface CampaignUser {
-  id: string;
+  id: number;
   avatar: string;
   firstName: string;
   lastName: string;
@@ -11,15 +11,15 @@ export interface CampaignUser {
   startedAt?: Date;
   completedAt?: Date;
   progress: number; // Pourcentage de completion
-  currentFormationId?: string;
-  completedFormations?: string[];
+  currentFormationId?: number;
+  completedFormations?: number[];
   incidents?: Incident[];
 }
 
 export interface SubscriptionTrainingGet {
-  id?: string;
+  id?: number;
   uid: string;
-  fid: string;
+  fid: number;
   cid: string;
   status?: "not_started" | "in_progress" | "completed";
   startedAt?: Date;
@@ -27,6 +27,22 @@ export interface SubscriptionTrainingGet {
   progress: number; // Pourcentage de completion
   created_at?: string;
 }
+
+export interface SubscriptionTrainingUser {
+  id?: number;
+  sub?: number;
+  title: string;
+  description: string;
+  category: string;
+  level: "beginner" | "intermediate" | "advanced" | string;
+  duration: number;
+  enrolledCount: number;
+  progress: number;
+  active: boolean;
+  image?: string;
+}
+
+
 
 export interface Incident {
   id: string;

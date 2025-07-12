@@ -126,7 +126,7 @@ export const createCampaign = async (req: Request, res: Response) => {
           dataToCreate.push({
             uid: data.targetUsers[i],
             cid: data.id,
-            fid: data.formations[j],
+            fid: Number(data.formations[j]),
             progress: 0,
           });
         }

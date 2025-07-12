@@ -10,14 +10,25 @@ const upload = multer({ storage: multer.memoryStorage() });
 TrainingRouter.get(
   "/",
   authenticateUserByAccessToken,
+  TrainingController.getAllTrainings
+);
+
+TrainingRouter.post(
+  "/:id",
+  authenticateUserByAccessToken,
+  TrainingController.subscribeToTrainings
+);
+
+TrainingRouter.get(
+  "/:id/all",
+  authenticateUserByAccessToken,
   TrainingController.getTrainingsToSuscription
 );
 
 TrainingRouter.get(
   "/:id/courses",
   authenticateUserByAccessToken,
-  TrainingController.getAllTrainings
+  TrainingController.getAllCoursesByFormationId
 );
-
 
 export default TrainingRouter;

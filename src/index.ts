@@ -12,6 +12,7 @@ import AdminDomainsRouter from "./routes/admin-domains.route";
 import AdminCoursesRouter from "./routes/admin-courses.route";
 import AdminActivityRouter from "./routes/admin-activity.route";
 import AdminCampaignsRouter from "./routes/admin-campaigns.route";
+import TrainingRouter from "./routes/trainings.route";
 
 dotenv.config();
 const PORT = Number(process.env.PORT ?? 3500);
@@ -24,7 +25,7 @@ server.start();
 server.use("/api/test", TestRouter);
 server.use("/api/users", UserRouter);
 server.use("/api/auth", AuthRouter);
-server.use("/api/trainings", AdminTrainingsRouter);
+server.use("/api/trainings", TrainingRouter);
 
 // appels vers toutes les routes admins
 server.use("/api/admin/users", AdminUserRouter);

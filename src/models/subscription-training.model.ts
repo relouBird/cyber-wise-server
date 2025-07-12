@@ -48,39 +48,6 @@ export class SubscriptionTrainingClass {
     return null;
   }
 
-  //   async getAllByCampaignId(
-  //     id: string,
-  //     errorHandler?: ErrorHandler
-  //   ): Promise<CampaignUser[] | null> {
-  //     let isError = false;
-  //     const data = (await this.fetch.GetAllByParameter("cid", id, (error) => {
-  //       errorHandler && errorHandler(error);
-  //       console.log("erreur-recuperation-sub-=>", error?.message);
-  //       isError = true;
-  //     })) as SubscriptionTrainingGet[];
-
-  //     if (!isError && data && data.length) {
-  //       let tabData: CampaignUser[] = [];
-  //       for (let i = 0; i < data.length; i++) {
-  //         let dataInstance = data[i];
-  //         const usersimple: UserSimpleCredentials = convertData(
-  //           await this.databaseUser.get(dataInstance.uid, (error) => {
-  //             errorHandler && errorHandler(error as unknown as PostgrestError);
-  //             console.log("erreur-recuperation-user-=>", error?.message);
-  //             isError = true;
-  //           })
-  //         );
-
-  //         if (!isError) {
-  //           tabData.push(createCampaignUserFromSimple(dataInstance, usersimple));
-  //         }
-  //       }
-  //       return tabData;
-  //     }
-
-  //     return null;
-  //   }
-
   async getAllByCampaignId(
     id: string,
     errorHandler?: ErrorHandler
@@ -145,13 +112,44 @@ export class SubscriptionTrainingClass {
     return null;
   }
 
+  async getAllByUserId(
+    id: string,
+    errorHandler?: ErrorHandler
+  ): Promise<SubscriptionTrainingGet[] | null> {
+    let isError = false;
+    const data = (await this.fetch.GetAllByParameter("uid", id, (error) => {
+      errorHandler && errorHandler(error);
+      console.log("erreur-recuperation-sub-" + id + "=>", error?.message);
+      isError = true;
+    })) as SubscriptionTrainingGet[];
+
+    return data;
+  }
+
+  async get(
+    id: string,
+    errorHandler?: ErrorHandler
+  ): Promise<SubscriptionTrainingGet | null> {
+    let isError = false;
+    const data = (await this.fetch.GetById(id, (error) => {
+      errorHandler && errorHandler(error);
+      console.log("erreur-recuperation-sub-" + id + "=>", error?.message);
+      isError = true;
+    })) as SubscriptionTrainingGet;
+
+    if (data) {
+      return data;
+    }
+    return null;
+  }
+
   async create(
     req: SubscriptionTrainingGet,
     errorHandler?: ErrorHandler
   ): Promise<SubscriptionTrainingGet | null> {
     let isError = false;
     const data = (await this.createClass.insert(req, (error) => {
-      console.log("erreur-campagne =>", error?.message);
+      console.log("erreur-creation-subtraining =>", error?.message);
       errorHandler && errorHandler(error);
     })) as SubscriptionTrainingGet;
 
