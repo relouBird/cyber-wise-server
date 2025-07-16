@@ -160,6 +160,24 @@ export class SubscriptionTrainingClass {
     return null;
   }
 
+  async update(
+    id: string,
+    payload: Partial<SubscriptionTrainingGet>,
+    errorHandler?: ErrorHandler
+  ) {
+    let isError = false;
+    const data = (await this.updateClass.UpdateById(id, payload, (error) => {
+      errorHandler && errorHandler(error);
+      console.log("erreur-recuperation-sub-" + id + "=>", error?.message);
+      isError = true;
+    })) as SubscriptionTrainingGet;
+
+    if (data && !isError) {
+      return data;
+    }
+    return null;
+  }
+
   async createMany(
     req: SubscriptionTrainingGet[],
     errorHandler?: ErrorHandler

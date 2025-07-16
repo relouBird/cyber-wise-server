@@ -2,10 +2,17 @@ import { Request, Response } from "express";
 import { CampaignClass } from "../models/campaigns.model";
 import {
   CampaignDataReturnInterface,
+  CampaignDataReturnUserInterface,
   CreateCampaignInterface,
 } from "../types/campaigns.type";
 import { SubscriptionTrainingClass } from "../models/subscription-training.model";
-import { SubscriptionTrainingGet } from "../types/sub-training.type";
+import {
+  CampaignUser,
+  SubscriptionTrainingGet,
+} from "../types/sub-training.type";
+import { transformCampaignDataUser } from "../helpers/campaigns.helper";
+import { TrainingClass } from "../models/training.model";
+import { CoursesClass } from "../models/courses.model";
 
 // ceci permet de recuperer toutes les campagnes recentes...
 export const getAllCampaigns = async (req: Request, res: Response) => {};
@@ -125,7 +132,7 @@ export const createCampaign = async (req: Request, res: Response) => {
         for (let j = 0; j < data.formations.length; j++) {
           dataToCreate.push({
             uid: data.targetUsers[i],
-            cid: data.id,
+            cid: Number(data.id),
             fid: Number(data.formations[j]),
             progress: 0,
           });
@@ -270,6 +277,76 @@ export const deleteCampaign = async (req: Request, res: Response) => {
   } else {
     res.status(404).send({
       message: "Erreur lors de la récupération des Domaines",
+      error: errorMessage,
+    });
+  }
+};
+
+// Partie utilisateurs final...
+
+// ceci permet de recuperer toutes les campagnes recentes d'une organisation...
+export const getAllOrgCampaignsUser = async (req: Request, res: Response) => {
+  const campaigns = new CampaignClass();
+  let subTraining = new SubscriptionTrainingClass();
+  let courses = new CoursesClass();
+
+  let isError = false;
+  let errorMessage = "";
+  const data = await campaigns.getByOrg(req.params.id, (error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+    console.log("erreur-recuperation-campagne =>", errorMessage);
+  });
+
+  if (!isError && data) {
+    let newData: CampaignDataReturnUserInterface[] = [];
+
+    for (let i = 0; i < data.length; i++) {
+      let instance = data[i];
+      const dataTraining = (await subTraining.getAllByCampaignId(
+        instance.id,
+        (error) => {
+          isError = true;
+          errorMessage = error?.message ?? "";
+          console.log("erreur-recuperation-campagne =>", errorMessage);
+        }
+      )) as CampaignUser[];
+
+      const campaignNow = dataTraining.find((u) => u.userId == req.params.uid);
+
+      // calcul sur le temps d"estimation d'un cours
+      let costTime = 0;
+
+      for (let i = 0; i < instance.formations.length; i++) {
+        let partialData = await courses.getAllByFormationId(
+          instance.formations[i],
+          (error) => {
+            isError = true;
+            errorMessage = error?.message ?? "";
+            console.log("erreur-recuperation-campagne =>", errorMessage);
+          }
+        );
+
+        costTime += (partialData?.length ?? 0) * 5;
+      }
+
+      newData.push(
+        transformCampaignDataUser(
+          instance,
+          campaignNow?.completedFormations ?? [],
+          costTime
+        )
+      );
+    }
+
+    console.log("data-campaigns =>", data);
+    res.status(200).json({
+      message: `Tout les campaigns de l'org ${req.params.id}...`,
+      data: newData,
+    });
+  } else {
+    res.status(404).send({
+      message: "Erreur lors de la récupération des Campagnes",
       error: errorMessage,
     });
   }

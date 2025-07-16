@@ -20,7 +20,7 @@ export interface SubscriptionTrainingGet {
   id?: number;
   uid: string;
   fid: number;
-  cid: string;
+  cid?: number;
   status?: "not_started" | "in_progress" | "completed";
   startedAt?: Date;
   completedAt?: Date;
@@ -37,12 +37,11 @@ export interface SubscriptionTrainingUser {
   level: "beginner" | "intermediate" | "advanced" | string;
   duration: number;
   enrolledCount: number;
+  status: "not_started" | "in_progress" | "completed";
   progress: number;
   active: boolean;
   image?: string;
 }
-
-
 
 export interface Incident {
   id: string;

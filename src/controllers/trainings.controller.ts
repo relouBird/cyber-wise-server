@@ -9,6 +9,8 @@ import {
 } from "../types/sub-training.type";
 import { createSubscriptionTrainingFromTraining } from "../helpers/sub-training.helper";
 import { SubscriptionCoursesClass } from "../models/subscription-courses.model";
+import { SubCoursesInterface } from "../types/sub-courses.type";
+import { CampaignClass } from "../models/campaigns.model";
 
 // Permet de recuperer toutes les formations precises...
 export const getAllTrainings = async (req: Request, res: Response) => {
@@ -295,13 +297,14 @@ export const getTrainingsToSuscription = async (
 
     for (let i = 0; i < newData.length; i++) {
       const formation = newData[i];
-      const index = userSub.findIndex((u) => u.fid == formation.id);
+      const index = userSub.reverse().findIndex((u) => u.fid == formation.id);
 
       if (index != -1) {
         let partial = createSubscriptionTrainingFromTraining(
           formation,
           datas?.filter((u) => u.fid == formation.id).length ?? 0,
           userSub[index].progress,
+          userSub[index].status ?? "not_started",
           userSub[index].id ?? 1
         );
         console.log("partial =>", partial);
@@ -310,11 +313,102 @@ export const getTrainingsToSuscription = async (
         let partial = createSubscriptionTrainingFromTraining(
           formation,
           datas?.filter((u) => u.fid == formation.id).length ?? 0,
-          0
+          0,
+          "not_started"
         );
         tabToReturn.push(partial);
       }
     }
+    res.status(200).json({
+      message: "Toutes les Formations sont là...",
+      data: tabToReturn,
+    });
+  } else {
+    res.status(404).send({
+      message: "Erreur lors de la récupération des Users",
+      details: errorMessage,
+    });
+  }
+};
+
+// Permet de recuperer un une formation en particulier...
+export const getCampaignTrainingsToSuscription = async (
+  req: Request,
+  res: Response
+) => {
+  const trainings = new TrainingClass();
+  const courses = new CoursesClass();
+  const campaigns = new CampaignClass();
+  const subTrainings = new SubscriptionTrainingClass();
+
+  let isError = false;
+  let errorMessage = "";
+
+  const data = await trainings.getAll((error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+    console.log("erreur-recuperation-trainings=>", errorMessage);
+  });
+
+  const campaignNow = await campaigns.get(req.params.cid, (error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+    console.log("erreur-recuperation-campaign=>", errorMessage);
+  });
+
+  const newData: FormationType[] = [];
+
+  if (data && data.length) {
+    for (let i = 0; i < data.length; i++) {
+      let monoData = data[i];
+
+      let coursesList = await courses.getAllByFormationId(
+        String(monoData.id),
+        (error) => {
+          console.log("something-where-wrong-image =>", error?.message);
+        }
+      );
+
+      newData.push({
+        ...monoData,
+        courses: coursesList ? coursesList : [],
+      });
+    }
+  }
+
+  if (!isError && data && campaignNow) {
+    const datas = await subTrainings.getAll((error) => {
+      console.log("error =>", error?.message);
+      isError = true;
+      errorMessage = error?.message ?? "";
+    });
+
+    let tabToReturn: SubscriptionTrainingUser[] = [];
+
+    let userSub =
+      datas?.filter(
+        (u) => u.uid == req.params.id && u.cid == Number(req.params.cid)
+      ) || [];
+
+    for (let i = 0; i < newData.length; i++) {
+      const formation = newData[i];
+      const index = userSub.reverse().findIndex((u) => u.fid == formation.id);
+
+      if (index != -1) {
+        let partial = createSubscriptionTrainingFromTraining(
+          formation,
+          datas?.filter((u) => u.fid == formation.id).length ?? 0,
+          userSub[index].progress,
+          userSub[index].status ?? "not_started",
+          userSub[index].id ?? 1
+        );
+        console.log("partial =>", partial);
+        tabToReturn.push(partial);
+      }
+    }
+
+    // maintenant filtrons les données et ne recuperons que ceux appartenant à la campaign
+
     res.status(200).json({
       message: "Toutes les Formations sont là...",
       data: tabToReturn,
@@ -342,9 +436,11 @@ export const getAllCoursesByFormationId = async (
   });
 
   if (!isError && data) {
-    res
-      .status(200)
-      .json({ message: "Tout les cours sont là...", data: data });
+    console.log("Recuperation de tout les cours...");
+    res.status(200).json({
+      message: "Tout les cours sont là...",
+      data: data.sort((a, b) => a.order - b.order),
+    });
   } else {
     res.status(404).send({
       message: "Erreur lors de la récupération des Cours",
@@ -374,15 +470,16 @@ export const subscribeToTrainings = async (req: Request, res: Response) => {
     nous la recuperons et la conservons...
   */
   if (reqBody.sub) {
-    data = await subTrainings.get(String(reqBody.sub), (error) => {
+    data = (await subTrainings.get(String(reqBody.sub), (error) => {
       isError = true;
       errorMessage = error?.message ?? "";
-    });
+    })) as SubscriptionTrainingGet;
+
+    subTrainings.update(String(data?.id), { ...data, status: "in_progress" });
   } else {
     data = await subTrainings.create(
       {
         uid: req.params.id,
-        cid: "",
         fid: reqBody.id ?? 1,
         progress: 0,
       },
@@ -460,5 +557,75 @@ export const subscribeToTrainings = async (req: Request, res: Response) => {
         details: errorMessage,
       });
     }, 1500);
+  }
+};
+
+// ceci permet de complete la souscription d'un cours
+export const updateSubCoursesByFormationId = async (
+  req: Request,
+  res: Response
+) => {
+  const subCourses = new SubscriptionCoursesClass();
+  const subTrainings = new SubscriptionTrainingClass();
+  let isError = false;
+  let errorMessage = "";
+
+  const reqBody: SubCoursesInterface = {
+    ...req.body,
+    status: "completed",
+  };
+
+  console.log("sub-course-to-update-id-" + req.params.cid);
+
+  const data = await subCourses.update(req.params.cid, reqBody, (error) => {
+    isError = true;
+    errorMessage = error?.message ?? "";
+    console.log("error-update-sub-course =>", error?.message);
+  });
+
+  const coursesData = await subCourses.getAllBySubTraining(
+    req.params.id,
+    (error) => {
+      isError = true;
+      errorMessage = error?.message ?? "";
+      console.log("error-get-all-by-sub-training =>", error?.message);
+    }
+  );
+
+  if (!isError && data && coursesData) {
+    let progressData =
+      (coursesData.filter((u) => u.status == "completed").length /
+        coursesData.length) *
+      100;
+
+    console.log(
+      "progresss-on-training =>",
+      progressData,
+      "len-courses =>",
+      coursesData.length,
+      " courses-completed =>",
+      coursesData.filter((u) => u.status == "completed").length
+    );
+
+    const data = await subTrainings.update(
+      req.params.id,
+      {
+        progress: Number(progressData.toFixed(2)),
+        status: progressData == 100 ? "completed" : "in_progress",
+      },
+      (error) => {
+        isError = true;
+        errorMessage = error?.message ?? "";
+        console.log("error-update-sub-training =>", error?.message);
+      }
+    );
+    res
+      .status(200)
+      .json({ message: "Cours complété avec success...", data: data });
+  } else {
+    res.status(404).send({
+      message: "Erreur lors de la récupération des Cours",
+      details: errorMessage,
+    });
   }
 };

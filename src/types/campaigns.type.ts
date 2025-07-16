@@ -50,3 +50,21 @@ export interface CampaignDataGetInterface {
   notStartedUsers: number;
   completionRate: number;
 }
+
+
+export interface CampaignDataReturnUserInterface {
+  id: string;
+  name: string;
+  description: string;
+  image: string | File | undefined;
+  status: "draft" | "active" | "paused" | "completed";
+  createdAt: Date;
+  updatedAt: Date;
+  startDate: Date;
+  endDate?: Date;
+  totalFormations: number; 
+  completedFormations: number;
+  userProgress: number;
+  userStatus: "not_started" | "in_progress" | "completed";
+  estimatedTime: number;
+}

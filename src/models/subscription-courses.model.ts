@@ -89,4 +89,16 @@ export class SubscriptionCoursesClass {
     })) as SubCoursesInterface[];
     return data;
   }
+
+  async update(
+    id: string,
+    payload: SubCoursesInterface,
+    errorHandler?: ErrorHandler
+  ) {
+    const data = (await this.updateClass.UpdateById(id, payload, (error) => {
+      errorHandler && errorHandler(error);
+    })) as SubCoursesInterface;
+
+    return data;
+  }
 }

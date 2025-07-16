@@ -17,7 +17,7 @@ export function createCampaignUserFromSimple(
     lastName: user.lastName,
     email: user.email,
     role: user.role,
-    campaignId: subscription.cid,
+    campaignId: String(subscription.cid),
     userId: subscription.uid,
     status: subscription.status || "not_started",
     startedAt: subscription.startedAt,
@@ -33,7 +33,8 @@ export function createSubscriptionTrainingFromTraining(
   training: FormationType,
   count: number,
   progress: number,
-  sub ?: number,
+  status: "not_started" | "in_progress" | "completed",
+  sub?: number
 ): SubscriptionTrainingUser {
   return {
     id: training.id,
@@ -43,6 +44,7 @@ export function createSubscriptionTrainingFromTraining(
     category: training.categorie,
     level: training.level,
     duration: (training.courses?.length ?? 0) * 5,
+    status: status,
     enrolledCount: count,
     progress: progress,
     active: training.active,

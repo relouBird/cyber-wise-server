@@ -26,9 +26,21 @@ TrainingRouter.get(
 );
 
 TrainingRouter.get(
+  "/:id/all/:cid",
+  authenticateUserByAccessToken,
+  TrainingController.getCampaignTrainingsToSuscription
+);
+
+TrainingRouter.get(
   "/:id/courses",
   authenticateUserByAccessToken,
   TrainingController.getAllCoursesByFormationId
+);
+
+TrainingRouter.put(
+  "/:id/courses/:cid",
+  authenticateUserByAccessToken,
+  TrainingController.updateSubCoursesByFormationId
 );
 
 export default TrainingRouter;
